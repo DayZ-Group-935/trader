@@ -1,0 +1,1478 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>935 Trading Calculator</title>
+</head>
+<style>
+  body {
+    font-family: Calibri, sans-serif;
+    background-color: darkgrey;
+    margin: 0;
+    padding: 0;
+  }
+
+  .calculator,
+  .container,
+  .roles-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 22px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  h1,
+  h2 {
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+
+  .tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+  }
+
+  .tab button {
+    background-color: grey;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+  }
+
+  .tab button:hover {
+    background-color: #ddd;
+  }
+
+  .tab button.active {
+    background-color: #add8e6;
+  }
+
+  .tabcontent,
+  .roles-content {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+  }
+
+  .item-price,
+  .inline,
+  .roles-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .item-price select,
+  .calculator input[type="number"] {
+    padding: 8px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+  }
+
+  .item-price span {
+    width: 45%;
+    text-align: right;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .summary,
+  .roles-content {
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+
+  .calculate-btn,
+  .roles-content button {
+    background-color: red;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .calculate-btn:hover,
+  .roles-content button:hover {
+    background-color: #cc0000;
+  }
+
+  .button-container {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  .calculate-btn {
+    background-color: #008000;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+
+  #clearAllBtn {
+    background-color: red;
+  }
+
+  .roles-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: -50px;
+    font-size: 16.5px;
+  }
+
+  .roles-container .role-label {
+    display: inline-block;
+    background-color: grey;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    margin: 0 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .roles-container .role-label.active {
+    background-color: #add8e6;
+  }
+</style>
+
+<body>
+  <div class="calculator">
+    <h1>935 Trading Calculator</h1>
+
+    <!-- Tabs -->
+    <div class="tab">
+      <button class="tablinks" data-tab="buyTab">Buy</button>
+      <button class="tablinks" data-tab="sellTab">Sell</button>
+    </div>
+
+    <!-- Buy Tab -->
+    <div class="tabcontent" align="left" id="buyTab">
+      <h2>Buy</h2>
+      <div class="item-price">
+        <select id="buyCategory">
+          <!-- Categories will be populated here -->
+        </select>
+        <select id="buyItem">
+          <!-- Items will be populated here based on category selection -->
+        </select>
+
+      </div>
+      <div class="inline">
+        <label for="buyQuantity">Quantity:</label>
+        <input type="number" id="buyQuantity" min="1" value="1" style="width: 60px;">
+        <span id="buySelectedPrice">Price: 0 Cr</span>
+        <button class="addBtn">+Add</button>
+      </div>
+      <div id="buySummary" class="summary"></div>
+    </div>
+
+    <!-- Sell Tab -->
+    <div class="tabcontent" id="sellTab">
+      <h2>Sell</h2>
+      <div class="item-price">
+        <select id="sellItem">
+          <!-- Items will be populated here directly -->
+        </select>
+      </div>
+      <div class="inline">
+        <label for="sellQuantity">Quantity:</label>
+        <input type="number" id="sellQuantity" min="1" value="1" style="width: 60px;">
+        <span id="sellSelectedPrice">Price: 0 Cr</span>
+        <button class="addBtn">+Add</button>
+      </div>
+      <div id="sellSummary" class="summary"></div>
+    </div>
+
+    <!-- Button container for Calculate Total and Clear All buttons -->
+    <div class="button-container">
+      <button id="calculateBtn" class="calculate-btn">Calculate Total</button>
+      <button id="clearAllBtn" class="calculate-btn">Clear All</button>
+    </div>
+  </div>
+
+  <!-- Roles Container -->
+  <div class="roles-container">
+    <div class="role-column" id="roleColumn1">
+      <!-- Roles will be dynamically generated here -->
+    </div>
+    <div class="role-column" id="roleColumn2">
+      <!-- Roles will be dynamically generated here -->
+    </div>
+  </div>
+
+  <script>
+    //Define Items and Prices
+    const buyitems = {
+      "Weapons": [{
+          name: "M79 Thumper",
+          price: 4000
+        },
+        {
+          name: "Aug AX",
+          price: 3000
+        },
+        {
+          name: "M4A1",
+          price: 3000
+        },
+        {
+          name: "LAR",
+          price: 2500
+        },
+        {
+          name: "DMR",
+          price: 2500
+        },
+        {
+          name: "M70 Tundra",
+          price: 2500
+        },
+        {
+          name: "Savanna",
+          price: 2500
+        },
+        {
+          name: "VSD",
+          price: 2000
+        },
+        {
+          name: "Vikhr",
+          price: 2000
+        },
+        {
+          name: "Mosin",
+          price: 2000
+        },
+        {
+          name: "KAM",
+          price: 2000
+        },
+        {
+          name: "Vaiga",
+          price: 2000
+        },
+        {
+          name: "Crossbow",
+          price: 1500
+        },
+        {
+          name: "Revolver",
+          price: 750
+        },
+        {
+          name: "Engraved Kolt",
+          price: 750
+        },
+        {
+          name: "Deagle",
+          price: 750
+        },
+        {
+          name: "Fange Knife",
+          price: 250
+        },
+        {
+          name: "Combat Knife",
+          price: 250
+        },
+        {
+          name: "Hunter Knife",
+          price: 250
+        }
+      ],
+      "Attachments": [{
+          name: "Standardized Suppressor",
+          price: 750
+        },
+        {
+          name: "Normalized Suppressor",
+          price: 750
+        },
+        {
+          name: "Pistol Suppressor",
+          price: 100
+        },
+        {
+          name: "Bottle Suppressor",
+          price: 100
+        },
+        {
+          name: "LAR Lightweight Buttstock",
+          price: 100
+        },
+        {
+          name: "LAR Polymer Buttstock",
+          price: 100
+        },
+        {
+          name: "M4 CQB Buttstock",
+          price: 100
+        },
+        {
+          name: "M4 MP Buttstock",
+          price: 100
+        },
+        {
+          name: "M4 Polymer Handguard",
+          price: 100
+        },
+        {
+          name: "M4 MP Handguard",
+          price: 100
+        },
+        {
+          name: "KA Handguard",
+          price: 100
+        },
+        {
+          name: "KA Buttstock",
+          price: 100
+        }
+      ],
+      "Optics": [{
+          name: "Red Dot (Baraka)",
+          price: 300
+        },
+        {
+          name: "Kobra Sights",
+          price: 300
+        },
+        {
+          name: "RVN Sights",
+          price: 300
+        },
+        {
+          name: "ATOG 4x",
+          price: 300
+        },
+        {
+          name: "ATOG 6x",
+          price: 300
+        },
+        {
+          name: "PSO-1 Scope",
+          price: 300
+        },
+        {
+          name: "PU Scope",
+          price: 300
+        },
+        {
+          name: "Hunter Scope",
+          price: 300
+        },
+        {
+          name: "Starlight NV",
+          price: 1000
+        },
+        {
+          name: "Kazuar NV",
+          price: 1000
+        }
+      ],
+      "Magazines": [{
+          name: "40 Round C-Mag",
+          price: 500
+        },
+        {
+          name: "60 Round C-Mag",
+          price: 800
+        },
+        {
+          name: "20 Round M14 Mag",
+          price: 600
+        },
+        {
+          name: "20 Round LAR Mag",
+          price: 600
+        },
+        {
+          name: "30 Round KAM Poly Mag",
+          price: 200
+        },
+        {
+          name: "75 Round KAM Drum Mag",
+          price: 600
+        },
+        {
+          name: "10 Round VSD Mag",
+          price: 300
+        },
+        {
+          name: "10 Round Savanna Mag",
+          price: 300
+        },
+        {
+          name: "20 Round Vaiga Drum Mag",
+          price: 200
+        },
+        {
+          name: "30 Round Vikhr Mag",
+          price: 500
+        }
+      ],
+      "Boxed Ammo": [{
+          name: ".357",
+          price: 100
+        },
+        {
+          name: "9x39 AP",
+          price: 300
+        },
+        {
+          name: "9x19mm",
+          price: 100
+        },
+        {
+          name: "5.56x45",
+          price: 250
+        },
+        {
+          name: ".308 WIN",
+          price: 500
+        },
+        {
+          name: "545x39",
+          price: 250
+        },
+        {
+          name: "7.62x39",
+          price: 100
+        },
+        {
+          name: "7.62x54mmR",
+          price: 500
+        },
+        {
+          name: ".45ACP",
+          price: 100
+        },
+        {
+          name: "12GA Buck",
+          price: 100
+        },
+        {
+          name: "12GA Bean",
+          price: 100
+        },
+        {
+          name: "Crossbow Bolts",
+          price: 400
+        }
+      ],
+      "Explosives": [{
+          name: "US/RUS Grenades",
+          price: 500
+        },
+        {
+          name: "POX Vial",
+          price: 800
+        },
+        {
+          name: "Flashbangs",
+          price: 200
+        },
+        {
+          name: "Land Mines",
+          price: 500
+        },
+        {
+          name: "40MM Explosive",
+          price: 1500
+        },
+        {
+          name: "40MM Pox Grenade",
+          price: 1500
+        },
+        {
+          name: "Claymores",
+          price: 750
+        },
+        {
+          name: "Plastic Explosives",
+          price: 3000
+        },
+        {
+          name: "Detonator",
+          price: 100
+        },
+        {
+          name: "IED Container",
+          price: 400
+        }
+      ],
+      "Storage": [{
+          name: "Car Tent",
+          price: 3000
+        },
+        {
+          name: "Large Tent",
+          price: 2000
+        },
+        {
+          name: "Medium Tent",
+          price: 1200
+        },
+        {
+          name: "Sea Chest",
+          price: 800
+        },
+        {
+          name: "Barrel",
+          price: 1000
+        },
+        {
+          name: "Ammo Box",
+          price: 50
+        }
+      ],
+      backpacks: [{
+          name: "Field Bag",
+          price: 600
+        },
+        {
+          name: "Hunter Backpack",
+          price: 400
+        },
+        {
+          name: "Skull Backpack",
+          price: 500
+        },
+        {
+          name: "Combat Backpack",
+          price: 400
+        },
+        {
+          name: "Black Drypack",
+          price: 400
+        },
+        {
+          name: "Assault Bag",
+          price: 200
+        },
+        {
+          name: "Army Pouch",
+          price: 200
+        }
+      ],
+      "NBC Gear": [{
+          name: "Gas Masks",
+          price: 1000
+        },
+        {
+          name: "NBC Filters",
+          price: 400
+        },
+        {
+          name: "NBC Jacket",
+          price: 600
+        },
+        {
+          name: "NBC Pants",
+          price: 600
+        },
+        {
+          name: "NBC Gloves",
+          price: 400
+        },
+        {
+          name: "NBC Boots",
+          price: 400
+        },
+        {
+          name: "NBC Hood",
+          price: 600
+        }
+      ],
+      "Headgear": [{
+          name: "Assault Helmet",
+          price: 850
+        },
+        {
+          name: "Assault Visor",
+          price: 150
+        },
+        {
+          name: "Tactical Helm",
+          price: 600
+        },
+        {
+          name: "NV Goggles",
+          price: 2500
+        },
+        {
+          name: "NVG Strap",
+          price: 300
+        },
+        {
+          name: "Witch Hood",
+          price: 500
+        },
+        {
+          name: "Cowboy Hat",
+          price: 300
+        },
+        {
+          name: "Ski Mask",
+          price: 200
+        },
+        {
+          name: "Mime Mask",
+          price: 250
+        },
+        {
+          name: "Carnival Mask",
+          price: 200
+        },
+        {
+          name: "Aviators",
+          price: 100
+        }
+      ],
+      "Jackets": [{
+          name: "BDU Jacket",
+          price: 600
+        },
+        {
+          name: "Combat Jacket",
+          price: 600
+        },
+        {
+          name: "Field Jacket",
+          price: 600
+        },
+        {
+          name: "Hunter Jacket",
+          price: 600
+        }
+      ],
+      "Plate Carriers": [{
+          name: "Vest",
+          price: 1800
+        },
+        {
+          name: "Pouches",
+          price: 200
+        },
+        {
+          name: "Holster",
+          price: 50
+        }
+      ],
+      "Pants": [{
+          name: "BDU Pants",
+          price: 500
+        },
+        {
+          name: "Combat Pants",
+          price: 500
+        },
+        {
+          name: "Cargo Pants",
+          price: 500
+        },
+        {
+          name: "Hunter Pants",
+          price: 500
+        }
+      ],
+      "Boots": [{
+          name: "Black Assault Boots",
+          price: 500
+        },
+        {
+          name: "Tan Jungle Boots",
+          price: 300
+        },
+        {
+          name: "Green Jungle Boots",
+          price: 300
+        }
+      ],
+      "Ghillie": [{
+          name: "Ghillie Suit",
+          price: 1800
+        },
+        {
+          name: "Ghillie Hood",
+          price: 800
+        },
+        {
+          name: "Ghillie Rifle Wrap",
+          price: 500
+        }
+      ],
+      "Building Supplies": [{
+          name: "Box of Nails",
+          price: 500
+        },
+        {
+          name: "Sharpening Stones",
+          price: 400
+        },
+        {
+          name: "4Dial Combo Lock",
+          price: 500
+        },
+        {
+          name: "Hatchet",
+          price: 500
+        },
+        {
+          name: "Hacksaws",
+          price: 400
+        },
+        {
+          name: "Sledgehammer",
+          price: 300
+        },
+        {
+          name: "Pickaxe",
+          price: 400
+        },
+        {
+          name: "Field Shovel",
+          price: 300
+        },
+        {
+          name: "Crowbar",
+          price: 300
+        },
+        {
+          name: "Fireaxe",
+          price: 400
+        },
+        {
+          name: "Metal Wire",
+          price: 300
+        },
+        {
+          name: "Barbwire",
+          price: 300
+        },
+        {
+          name: "Pliers",
+          price: 300
+        },
+        {
+          name: "Camo Netting",
+          price: 400
+        },
+        {
+          name: "Rope",
+          price: 50
+        },
+        {
+          name: "Sheet Metal",
+          price: 1500
+        }
+      ],
+      "Miscellaneous": [{
+          name: "Gloves",
+          price: 300
+        },
+        {
+          name: "Sheath",
+          price: 100
+        },
+        {
+          name: "Canteen",
+          price: 200
+        },
+        {
+          name: "Belt",
+          price: 100
+        },
+        {
+          name: "Hip Pack",
+          price: 300
+        },
+        {
+          name: "Tourist Map",
+          price: 400
+        },
+        {
+          name: "9V Batteries",
+          price: 25
+        },
+        {
+          name: "Bear Trap",
+          price: 500
+        },
+        {
+          name: "Construction Light",
+          price: 400
+        },
+        {
+          name: "Cable Reel",
+          price: 400
+        },
+        {
+          name: "Electrical Repair Kit",
+          price: 400
+        },
+        {
+          name: "Faction Flags",
+          price: 500
+        },
+        {
+          name: "Power Generator",
+          price: 800
+        },
+        {
+          name: "Megaphone",
+          price: 300
+        },
+        {
+          name: "Gun Cleaning Kit",
+          price: 400
+        },
+        {
+          name: "Duct Tape",
+          price: 200
+        },
+        {
+          name: "Sewing Kit",
+          price: 300
+        },
+        {
+          name: "GPS Receiver",
+          price: 300
+        },
+        {
+          name: "Leather Repair Kit",
+          price: 300
+        },
+        {
+          name: "Epoxy Putty",
+          price: 400
+        },
+        {
+          name: "Rangefinder",
+          price: 400
+        },
+        {
+          name: "Canned Bacon",
+          price: 200
+        },
+        {
+          name: "Fronta Lemonade",
+          price: 100
+        }
+      ],
+      "Pharmaceuticals": [{
+          name: "Bandages",
+          price: 200
+        },
+        {
+          name: "Tetracycline",
+          price: 500
+        },
+        {
+          name: "Charcoal Tablets",
+          price: 500
+        },
+        {
+          name: "Multi Vitamins",
+          price: 100
+        },
+        {
+          name: "PoX Antidote",
+          price: 1000
+        },
+        {
+          name: "Morphine",
+          price: 300
+        },
+        {
+          name: "Blood Test Kit",
+          price: 100
+        },
+        {
+          name: "Blood Collection Kit",
+          price: 200
+        },
+        {
+          name: "IV Start Kit",
+          price: 100
+        }
+      ],
+      "Vehicle Components": [{
+          name: "Gasoline Canister",
+          price: 200
+        },
+        {
+          name: "Blowtorch",
+          price: 400
+        },
+        {
+          name: "Large Gas Canister",
+          price: 250
+        },
+        {
+          name: "Car Radiator",
+          price: 500
+        },
+        {
+          name: "Car Battery",
+          price: 200
+        },
+        {
+          name: "Truck Battery",
+          price: 400
+        },
+        {
+          name: "Battery Charger",
+          price: 400
+        },
+        {
+          name: "Spark Plug",
+          price: 200
+        },
+        {
+          name: "Glow Plug",
+          price: 400
+        },
+        {
+          name: "Tire Repair Kit",
+          price: 200
+        },
+        {
+          name: "Replacement Car Tires",
+          price: 300
+        },
+        {
+          name: "Replacement Humvee Tires",
+          price: 800
+        },
+        {
+          name: "Replacement Truck Tires",
+          price: 400
+        }
+      ]
+    };
+    const sellitems = [{
+        name: "Hockey Stick",
+        price: 500
+      },
+      {
+        name: "Meat Tenderizers",
+        price: 150
+      },
+      {
+        name: "Cigarettes",
+        price: 50
+      },
+      {
+        name: "Books",
+        price: 100
+      },
+      {
+        name: "Bible",
+        price: 10000
+      },
+      {
+        name: "Golden Deagle",
+        price: 25000
+      },
+      {
+        name: "Deer Pelt",
+        price: 300
+      },
+      {
+        name: "Boar Pelt",
+        price: 500
+      },
+      {
+        name: "Wolf Pelt",
+        price: 400
+      },
+      {
+        name: "Bear Pelt",
+        price: 800
+      },
+      {
+        name: "Tanned Leather",
+        price: 200
+      },
+      {
+        name: "Cannabis",
+        price: 10
+      },
+      {
+        name: "Set of 4 Teddy Bears",
+        price: 2000
+      }
+    ];
+    const roles = {
+      "Noob Tube": {
+        description: "Kill 2 players with 1 M79 round.",
+        discounts: {
+          "M79 Thumper": 15,
+          "40MM Explosive": 15,
+          "40MM Pox Grenade": 15
+        }
+      },
+      "Kamikaze": {
+        description: "Blow yourself up, killing 2 enemy players.",
+        discounts: {
+          "US/RUS Grenades": 25
+        }
+      },
+      "Librarian": {
+        description: "Sell 350 books and 1 bible in one sale.",
+        bonuses: {
+          "Books": 300,
+          "Bible": 300
+        } // Prices set to new values rather than discounts
+      },
+      "Mayweather": {
+        description: "Win a boxing tournament.",
+        discounts: {
+          "Gloves": 100
+        }
+      },
+      "Daryl Dixon": {
+        description: "Kill a fully kitted player with a crossbow.",
+        discounts: {
+          "Crossbow": 50,
+          "Crossbow Bolts": 50
+        }
+      },
+      "Negan": {
+        description: "Kill a fully geared player with a barbed or nail bat.",
+        discounts: {
+          "Box of Nails": 20
+        }
+      },
+      "Build-A-Bear": {
+        description: "Turn in 5 sets of teddy bears at one time (four different colors = a set).",
+        bonuses: {
+          "Set of 4 Teddy Bears": 2500
+        } // New value for sets of teddy bears
+      },
+      "Head Hunter": {
+        description: "Hit 100 kills by headshot.",
+        discounts: {
+          ".357": 50,
+          "9x39 AP": 50,
+          "9x19mm": 50,
+          "5.56x45": 50,
+          ".308 WIN": 50,
+          "545x39": 50,
+          "7.62x39": 50,
+          "7.62x54mmR": 50,
+          ".45ACP": 50,
+          "12GA Buck": 50,
+          "12GA Bean": 50
+        }
+      },
+      "Click Click Boom": {
+        description: "Kill an enemy player with a claymore.",
+        discounts: {
+          "US/RUS Grenades": 20,
+          "POX Vial": 20,
+          "Flashbangs": 20,
+          "Land Mines": 20,
+          "40MM Explosive": 20,
+          "40MM Pox Grenade": 20,
+          "Claymores": 20,
+          "Plastic Explosives": 20,
+          "IED Container": 20
+        }
+      },
+      "Roadkill": {
+        description: "Flatten a player with a vehicle at a speed of 70km/h or more.",
+        discounts: {
+          "Car Radiator": 25,
+          "Car Battery": 25,
+          "Truck Battery": 25,
+          "Spark Plug": 25,
+          "Glow Plug": 25,
+          "Replacement Car Tires": 25,
+          "Replacement Humvee Tires": 25,
+          "Replacement Truck Tires": 25
+        }
+      },
+      "All Your Base": {
+        description: "Raid an enemy flag during scheduled raid hours and turn in to the Trader within one hour.",
+        discounts: {
+          "Faction Flags": 100
+        }
+      },
+      "Hat Trick": {
+        description: "Sell 50 Hockey Sticks to Trader.",
+        bonuses: {
+          "Hockey Stick": 800
+        } // New value for hockey sticks
+      },
+      "Meet Your Beat": {
+        description: "Turn in 200 Meat Tenderizers to Trader at once.",
+        bonuses: {
+          "Meat Tenderizers": 300
+        } // New value for meat tenderizers
+      },
+      "Looper": {
+        description: "Successfully completed the loop-de-loop in a car event.",
+        discounts: {
+          "Car Radiator": 50,
+          "Car Battery": 50,
+          "Truck Battery": 50,
+          "Spark Plug": 50,
+          "Glow Plug": 50,
+          "Replacement Car Tires": 50,
+          "Replacement Humvee Tires": 50,
+          "Replacement Truck Tires": 50
+        }
+      },
+      "Hotshot": {
+        description: "Get a sniper kill at a range of over 400m.",
+        discounts: {
+          "M70 Tundra": 25,
+          "Savanna": 25,
+          "VSD": 25,
+          "PU Scope": 25,
+          "Hunter Scope": 25,
+          "10 Round VSD Mag": 25,
+          "10 Round Savanna Mag": 25,
+          "762x54mmR": 25,
+          ".308 WIN": 25,
+          "Rangefinder": 25
+        }
+      },
+      "Deadshot": {
+        description: "Get a sniper kill at a range of over 800m.",
+        discounts: {
+          "M70 Tundra": 50,
+          "Savanna": 50,
+          "VSD": 50,
+          "PU Scope": 50,
+          "Hunter Scope": 50,
+          "10 Round VSD Mag": 50,
+          "10 Round Savanna Mag": 50,
+          "762x54mmR": 50,
+          ".308 WIN": 50,
+          "Rangefinder": 50
+        }
+      },
+      "Dr. Greenthumb": {
+        description: "Sell 1200 pieces of Cannabis in a single trip.",
+        bonuses: {
+          "Cannabis": 25
+        } // New value for Cannabis
+      },
+      "Founding Member": {
+        description: "Special pricing for founding members.",
+        discounts: {}, // No direct item discounts
+        bonuses: {} // No direct item bonuses
+      }
+    };
+    //END OF ITEMS AND ROLES
+    // Event Listeners Initialization
+    document.addEventListener("DOMContentLoaded", function() {
+      // Define all UI elements
+      const buyCategorySelect = document.getElementById("buyCategory");
+      const buyItemSelect = document.getElementById("buyItem");
+      const sellItemSelect = document.getElementById("sellItem");
+      const rolesContainer1 = document.getElementById("roleColumn1");
+      const rolesContainer2 = document.getElementById("roleColumn2");
+      const buyAddBtn = document.querySelector("#buyTab .addBtn");
+      const sellAddBtn = document.querySelector("#sellTab .addBtn");
+      const buySelectedPriceSpan = document.getElementById("buySelectedPrice");
+      const sellSelectedPriceSpan = document.getElementById("sellSelectedPrice");
+      const clearAllBtn = document.getElementById("clearAllBtn");
+        const foundingMemberCheckbox = document.getElementById('role-FoundingMember'); // Ensure this ID is correct
+      const calculateBtn = document.getElementById("calculateBtn");
+      const roleCheckboxes = document.querySelectorAll(".roles-container input[type='checkbox']");
+      const tablinks = document.getElementsByClassName("tablinks");
+      // Populate select elements
+      populateCategories();
+      populateRoles();
+      populateSellItems();
+      attachEventListeners();
+
+      function populateCategories() {
+        Object.keys(buyitems).forEach((category, index) => {
+          let option = document.createElement("option");
+          option.value = category;
+          option.textContent = category;
+          buyCategorySelect.appendChild(option);
+        });
+        buyCategorySelect.addEventListener('change', () => populateBuyItems(buyCategorySelect.value));
+        populateBuyItems(buyCategorySelect.value);
+      }
+
+      function populateBuyItems(category) {
+        buyItemSelect.innerHTML = ''; // Clear existing options
+        buyitems[category].forEach(item => {
+          let option = document.createElement("option");
+          option.value = item.price;
+          option.textContent = item.name;
+          buyItemSelect.appendChild(option);
+        });
+        updateDisplayedPrice(document.getElementById("buySelectedPrice"), buyItemSelect);
+      }
+
+      function populateSellItems() {
+        sellitems.forEach(item => {
+          let option = document.createElement("option");
+          option.value = item.price;
+          option.textContent = item.name;
+          sellItemSelect.appendChild(option);
+        });
+      }
+      // Function to populate roles with checkboxes
+function populateRoles() {
+  let rolesContainer1 = document.getElementById('roleColumn1');
+  let rolesContainer2 = document.getElementById('roleColumn2');
+  let index = 0;
+
+  // Dynamically generate roles excluding the Founding Member for regular distribution
+  Object.keys(roles).forEach(role => {
+    if (role === "Founding Member") return;  // Skip Founding Member in regular loop
+
+    let checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = 'role-' + index;
+    checkbox.value = role;
+    let label = document.createElement('label');
+    label.htmlFor = 'role-' + index;
+    label.textContent = role;
+    let container = document.createElement('div');
+    container.appendChild(checkbox);
+    container.appendChild(label);
+
+    // Alternate roles between two columns
+    if (index % 2 === 0) {
+      rolesContainer1.appendChild(container);
+    } else {
+      rolesContainer2.appendChild(container);
+    }
+    index++;
+  });
+
+  // Specifically add Founding Member to second column
+  let foundingMemberCheckbox = document.createElement('input');
+  foundingMemberCheckbox.type = 'checkbox';
+  foundingMemberCheckbox.id = 'role-' + index;
+  foundingMemberCheckbox.value = 'Founding Member';
+  let foundingMemberLabel = document.createElement('label');
+  foundingMemberLabel.htmlFor = 'role-' + index;
+  foundingMemberLabel.textContent = 'Founding Member';
+  let foundingMemberContainer = document.createElement('div');
+  foundingMemberContainer.appendChild(foundingMemberCheckbox);
+  foundingMemberContainer.appendChild(foundingMemberLabel);
+  rolesContainer2.appendChild(foundingMemberContainer);  // Always add to second column
+}
+
+      function attachEventListeners() {
+        buyAddBtn.addEventListener("click", () => addToSummary(buyItemSelect, "buy"));
+        sellAddBtn.addEventListener("click", () => addToSummary(sellItemSelect, "sell"));
+// Assuming buyItemSelect and sellItemSelect are part of a form where buy and sell operations are distinguished
+buyItemSelect.addEventListener('change', () => updateDisplayedPrice(buySelectedPriceSpan, buyItemSelect, "buy"));
+sellItemSelect.addEventListener('change', () => updateDisplayedPrice(sellSelectedPriceSpan, sellItemSelect, "sell"));
+
+        roleCheckboxes.forEach(checkbox => {
+          checkbox.addEventListener('change', () => {
+            updateDisplayedPrice(buySelectedPriceSpan, buyItemSelect);
+            updateDisplayedPrice(sellSelectedPriceSpan, sellItemSelect);
+          });
+        });
+        clearAllBtn.addEventListener("click", clearAllTransactions);
+        calculateBtn.addEventListener("click", calculateAndShowTotals);
+        Array.from(tablinks).forEach(link => {
+          link.addEventListener("click", function(event) {
+            openTab(event, this.getAttribute("data-tab"));
+          });
+        });
+        // Set the default display for buy tab
+        document.getElementById("buyTab").style.display = "block";
+        document.querySelector(".tablinks[data-tab='buyTab']").classList.add("active");
+      }
+      // Function to add items to summary and handle dynamic updates
+      function addToSummary(itemSelect, type) {
+        const quantityInput = document.getElementById(type + "Quantity");
+        const summaryDiv = document.getElementById(type + "Summary");
+        let quantity = parseInt(quantityInput.value);
+        if (quantity > 0) {
+          let selectedOption = itemSelect.selectedOptions[0];
+          let itemName = selectedOption.textContent;
+          let basePrice = parseFloat(selectedOption.value);
+          let finalPrice = calculateDiscountedPrice(itemName, basePrice);
+          let subtotal = finalPrice * quantity;
+          let summaryItem = document.createElement("div");
+          summaryItem.dataset.itemName = itemName;
+          summaryItem.dataset.quantity = quantity;
+          summaryItem.dataset.basePrice = basePrice;
+          summaryItem.innerHTML = `${itemName} x ${quantity} = ${subtotal.toFixed(0)} Cr <button class="removeBtn">x</button>`;
+          summaryDiv.appendChild(summaryItem);
+          summaryItem.querySelector(".removeBtn").addEventListener("click", () => {
+            summaryDiv.removeChild(summaryItem);
+          });
+          quantityInput.value = 1; // Reset quantity input after adding
+          updateDisplayedPrice(document.getElementById(type + 'SelectedPrice'), itemSelect); // Update displayed price
+        }
+      }
+function calculateDiscountedPrice(itemName, basePrice, type) {
+  let finalPrice = basePrice;
+  const foundingMemberCheckbox = document.getElementById('role-FoundingMember'); // Ensure this ID is correct
+  let foundingMemberDiscount = 1; // No discount by default
+
+  // Check if the Founding Member checkbox is checked and the type is 'buy'
+  if (foundingMemberCheckbox && foundingMemberCheckbox.checked && type === "buy") {
+    foundingMemberDiscount = 0.9; // 10% discount
+  }
+
+  // Apply other role-based discounts or bonuses
+  document.querySelectorAll(".roles-container input[type='checkbox']:not(#role-FoundingMember)").forEach(checkbox => {
+    if (checkbox.checked) {
+      let roleName = checkbox.value;
+      let roleDetails = roles[roleName];
+
+      if (roleDetails.discounts && roleDetails.discounts[itemName]) {
+        let discount = roleDetails.discounts[itemName] / 100;
+        finalPrice = Math.min(finalPrice, basePrice * (1 - discount));
+      }
+      if (roleDetails.bonuses && roleDetails.bonuses[itemName]) {
+        finalPrice = roleDetails.bonuses[itemName];
+      }
+    }
+  });
+
+  // Apply Founding Member discount last to ensure it stacks correctly
+  return finalPrice * foundingMemberDiscount;
+}
+
+
+      function clearAllTransactions() {
+        document.querySelectorAll(".summary").forEach(div => div.innerHTML = '');
+        buySelectedPriceSpan.textContent = "Price: 0 Cr";
+        sellSelectedPriceSpan.textContent = "Price: 0 Cr";
+      }
+
+      function calculateTotal(type) {
+        let summaryDiv = document.getElementById(type + "Summary");
+        let total = 0;
+        summaryDiv.querySelectorAll('div').forEach(div => {
+          let quantity = parseInt(div.dataset.quantity);
+          let itemName = div.dataset.itemName;
+          let basePrice = parseFloat(div.dataset.basePrice);
+          let adjustedPrice = calculateDiscountedPrice(itemName, basePrice); // Calculate adjusted price
+          total += adjustedPrice * quantity;
+        });
+        return total;
+      }
+
+function calculateAndShowTotals() {
+    let foundingMemberCheckbox = document.getElementById('role-FoundingMember');
+    let totalBuy = calculateTotal('buy');
+    let totalSell = calculateTotal('sell');
+    let message = "";
+  // If Founding Member is active, apply a 10% discount to the total buy price
+        let foundingMemberBuyTotal = totalBuy * 0.9; // Apply the 10% discount
+
+    if (foundingMemberCheckbox && foundingMemberCheckbox.checked) {
+        
+        message = "Total Buy: " + foundingMemberBuyTotal.toFixed(0) + " Cr\n" +
+                  "Total Sell: " + totalSell.toFixed(0) + " Cr";
+    } else {
+        // If Founding Member is not active, display the normal totals
+        message = "Total Buy: " + totalBuy.toFixed(0) + " Cr\n" +
+                  "Founding Member: " + foundingMemberBuyTotal.toFixed(0) + " Cr if player has role\n" +
+          "\n" +
+                  "Total Sell: " + totalSell.toFixed(0) + " Cr";
+    }
+
+    alert(message);
+}
+
+      // Function to update prices displayed near item selects
+function updateDisplayedPrice(displaySpan, itemSelect, type) {
+  if (itemSelect.selectedOptions.length > 0) {
+    let itemName = itemSelect.selectedOptions[0].textContent;
+    let basePrice = parseFloat(itemSelect.value);
+    let discountedPrice = calculateDiscountedPrice(itemName, basePrice, type);
+    displaySpan.textContent = `Price: ${discountedPrice.toFixed(0)} Cr`;
+  }
+}
+
+      // Attach event listeners to role checkboxes to trigger price updates
+      document.querySelectorAll(".roles-container input[type='checkbox']").forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          updateDisplayedPrice(document.getElementById('buySelectedPrice'), document.getElementById('buyItem'));
+          updateDisplayedPrice(document.getElementById('sellSelectedPrice'), document.getElementById('sellItem'));
+          updateSummaries();
+        });
+      });
+      // Attach event listener to role checkboxes to update prices when roles change
+      roleCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          updateDisplayedPrice(document.getElementById('buySelectedPrice'), buyItemSelect);
+          updateDisplayedPrice(document.getElementById('sellSelectedPrice'), sellItemSelect);
+          // Call any additional update functions if items are in summary
+          updateSummaries();
+        });
+      });
+
+      function updateSummaries() {
+        // Recalculate and update the buy summary
+        const buySummaryDiv = document.getElementById('buySummary');
+        const buyItems = buySummaryDiv.querySelectorAll('div'); // Assuming each item is in its own <div>
+        buyItems.forEach(div => {
+          const itemName = div.dataset.itemName; // Ensure you store itemName as a data attribute when creating the summary div
+          const quantity = parseInt(div.dataset.quantity, 10); // Same for quantity
+          const basePrice = parseFloat(div.dataset.basePrice); // Store basePrice too when adding items to the summary
+          const discountedPrice = calculateDiscountedPrice(itemName, basePrice);
+          const totalPrice = discountedPrice * quantity;
+          div.innerHTML = `${itemName} x ${quantity} = ${totalPrice.toFixed(0)} Cr <button class="removeBtn">x</button>`;
+          // Reattach the remove button event listener, since the innerHTML overwrite removes it
+          div.querySelector('.removeBtn').addEventListener('click', function() {
+            buySummaryDiv.removeChild(div);
+          });
+        });
+        // Similarly, recalculate and update the sell summary
+        const sellSummaryDiv = document.getElementById('sellSummary');
+        const sellItems = sellSummaryDiv.querySelectorAll('div'); // Assuming each item is in its own <div>
+        sellItems.forEach(div => {
+          const itemName = div.dataset.itemName;
+          const quantity = parseInt(div.dataset.quantity, 10);
+          const basePrice = parseFloat(div.dataset.basePrice);
+          const discountedPrice = calculateDiscountedPrice(itemName, basePrice);
+          const totalPrice = discountedPrice * quantity;
+          div.innerHTML = `${itemName} x ${quantity} = ${totalPrice.toFixed(0)} Cr <button class="removeBtn">x</button>`;
+          // Reattach the remove button event listener
+          div.querySelector('.removeBtn').addEventListener('click', function() {
+            sellSummaryDiv.removeChild(div);
+          });
+        });
+      }
+
+      function openTab(evt, tabName) {
+        let tabcontent = document.getElementsByClassName("tabcontent");
+        let tablinks = document.getElementsByClassName("tablinks");
+        Array.from(tabcontent).forEach(content => content.style.display = "none");
+        Array.from(tablinks).forEach(link => link.classList.remove("active"));
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.classList.add("active");
+      }
+    });
+  </script>
+</body>
+
+</html>
