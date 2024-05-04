@@ -1008,6 +1008,10 @@
         price: 800
       },
       {
+        name: "Rabbit Pelt",
+        price: 300
+      },
+      {
         name: "Tanned Leather",
         price: 200
       },
@@ -1110,6 +1114,19 @@
           "Replacement Truck Tires": 25
         }
       },
+      "Wreck-It Ralph": {
+        description: "Complete a large-size base dismantle.",
+        discounts: {
+          "Hatchet": 20,
+          "Hacksaws": 20,
+          "Sledgehammer": 20,
+          "Pickaxe": 20,
+          "Field Shovel": 20,
+          "Crowbar": 20,
+          "Fireaxe": 20,
+          "Pliers": 20
+        }
+      },
       "All Your Base": {
         description: "Raid an enemy flag during scheduled raid hours and turn in to the Trader within one hour.",
         discounts: {
@@ -1127,6 +1144,16 @@
         bonuses: {
           "Meat Tenderizers": 300
         } // New value for meat tenderizers
+      },
+      "Big Game Hunter": {
+        description: "Bring in 6 Bear pelts , 12 wolf pelts, 6 Boar pelts, 20 deer pelts, and 5 Rabbit pelts at the same time.",
+        bonuses: {
+          "Bear Pelt": 1200,
+          "Wolf Pelt": 600,
+          "Deer Pelt": 450,
+          "Boar Pelt": 750,
+          "Rabbit Pelt": 450
+        } // New value for pelts
       },
       "Looper": {
         description: "Successfully completed the loop-de-loop in a car event.",
@@ -1329,10 +1356,13 @@ sellItemSelect.addEventListener('change', () => updateDisplayedPrice(sellSelecte
           updateDisplayedPrice(document.getElementById(type + 'SelectedPrice'), itemSelect); // Update displayed price
         }
       }
+      
 function calculateDiscountedPrice(itemName, basePrice, type) {
   let finalPrice = basePrice;
   const foundingMemberCheckbox = document.getElementById('role-FoundingMember'); // Ensure this ID is correct
   let foundingMemberDiscount = 1; // No discount by default
+  
+  
 
   // Check if the Founding Member checkbox is checked and the type is 'buy'
   if (foundingMemberCheckbox && foundingMemberCheckbox.checked && type === "buy") {
